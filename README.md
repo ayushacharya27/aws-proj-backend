@@ -40,7 +40,7 @@ tunnels:
 ```
 
 ```bash
-cd aws-project-backend && git checkout master
+cd aws-proj-backend && git checkout master
 ```
 
 ```bash
