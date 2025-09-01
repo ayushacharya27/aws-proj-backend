@@ -52,6 +52,6 @@ nohup python3 test.py &
 ```
 
 ```bash 
-ngrok start ayush
+ngrok start ayush &
 ```
 
