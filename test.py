@@ -8,17 +8,27 @@ s3 = boto3.client("s3")
 BUCKET_NAME = "aws23bps"
 
 class SimpleHTTPRequestHandler(BaseHTTPRequestHandler):
-    def do_POST(self):
-        # Add CORS headers for all POST requests
+    def do_OPTIONS(self):
+        # This is the preflight request handler for CORS
         self.send_response(200)
-        self.send_header('Access-Control-Allow-Origin', 'http://localhost:3000') # <--- Add this header
+        self.send_header('Access-Control-Allow-Origin', '*')
         self.send_header('Access-Control-Allow-Methods', 'POST, GET, OPTIONS')
-        self.send_header('Access-Control-Allow-Headers', 'Content-Type')
+        self.send_header('Access-Control-Allow-Headers', 'Content-Type, X-Requested-With')
+        self.end_headers()
 
+    def do_POST(self):
         if self.path == '/upload':
+            # Set CORS headers for the actual POST request
+            self.send_response(200)
+            self.send_header('Access-Control-Allow-Origin', '*') 
+            self.send_header('Access-Control-Allow-Methods', 'POST, GET, OPTIONS')
+            self.send_header('Access-Control-Allow-Headers', 'Content-Type')
+            self.end_headers() # You must end the headers here
+            
+            # The rest of your existing logic for handling the POST request
             ctype, pdict = cgi.parse_header(self.headers.get('content-type'))
+            
             if ctype == 'multipart/form-data':
-                # Use cgi.FieldStorage to handle the entire form data
                 form = cgi.FieldStorage(
                     fp=self.rfile,
                     headers=self.headers,
@@ -38,8 +48,6 @@ class SimpleHTTPRequestHandler(BaseHTTPRequestHandler):
                     s3.upload_file(filename, BUCKET_NAME, filename)
                     os.remove(filename)
 
-                    self.send_response(200)
-                    self.end_headers()
                     self.wfile.write(b'File uploaded and sent to S3 successfully')
                 else:
                     self.send_response(400)
